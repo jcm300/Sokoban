@@ -1,4 +1,4 @@
-![Sokoban](screenshots/logo.png)
+# ![Sokoban](screenshots/logo.png)
 
 [Sokoban](https://sokoban.info/) is a puzzle game invented in Japan. The objective of the game is to push crates to their proper locations with minimum number of moves.
 
