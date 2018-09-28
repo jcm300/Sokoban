@@ -52,11 +52,11 @@ main = do
 -- | load dos mapas para o jogo
 loadMapas :: IO ([String])
 loadMapas = do
-              mcp1 <- readFile "./nivels/nivel1"
-              mcp2 <- readFile "./nivels/nivel2"
-              mcp3 <- readFile "./nivels/nivel3"
-              mcp4 <- readFile "./nivels/nivel4"
-              mcp5 <- readFile "./nivels/nivel5"
+              mcp1 <- readFile "./levels/level1"
+              mcp2 <- readFile "./levels/level2"
+              mcp3 <- readFile "./levels/level3"
+              mcp4 <- readFile "./levels/level4"
+              mcp5 <- readFile "./levels/level5"
               return [mcp1,mcp2,mcp3,mcp4,mcp5]
 
 -- | possibilita o jogador escolher o tema
