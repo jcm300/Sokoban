@@ -1,24 +1,24 @@
 # Sokoban
 
-Project done for Computer Laboratories I at **Universidade do Minho** using **Haskell**.
+Project done for Computer Laboratories I at **Universidade do Minho** using [**Haskell**](https://www.haskell.org/).
 
-##Setup
+## Setup
 
-###Dependencies
+### Dependencies
 
 - [OpenGL](https://www.opengl.org/about/)
 - [freeGLUT](http://freeglut.sourceforge.net/)
 - [stack](https://docs.haskellstack.org/en/stable/README/)
 
-###Build
+### Build
 
 - clone the repository
 - run install.sh
 
-###Run
+### Run
 
 After building go to the *build* folder(inside the cloned folder) and run *Sokoban* executable file in command line: `./Sokoban`
 
-##License
+## License
 
 Licensed under the MIT License, see [LICENSE.md](LICENSE) for more details.
