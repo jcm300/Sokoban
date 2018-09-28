@@ -2,9 +2,9 @@
 
 [Sokoban](https://sokoban.info/) is a puzzle game invented in Japan. The objective of the game is to push crates to their proper locations with minimum number of moves.
 
-This project was done for Computer Laboratories I at **Universidade do Minho** using **Haskell**.
+This project was done for Computer Laboratories I at **Universidade do Minho** using [**Haskell**](https://www.haskell.org/).
 
-##Usage
+## Usage
 
 The game have different themes with are:
 
@@ -27,23 +27,23 @@ During a level you can:
 - go to prev level: pressing 'b'
 - go to next level: pressing 'n'
 
-##Setup
+## Setup
 
-###Dependencies
+### Dependencies
 
 - [OpenGL](https://www.opengl.org/about/)
 - [freeGLUT](http://freeglut.sourceforge.net/)
 - [stack](https://docs.haskellstack.org/en/stable/README/)
 
-###Build
+### Build
 
 - clone the repository
 - run install.sh
 
-###Run
+### Run
 
 After building go to the *build* folder(inside the cloned folder) and run *Sokoban* executable file in command line: `./Sokoban`
 
-##License
+## License
 
 Licensed under the MIT License, see [LICENSE.md](LICENSE) for more details.
