@@ -49,15 +49,35 @@ main = do
          mapaInicial <- return (defMI mcp nMapa)
          joga mapaInicial (desenhaMapa theme title) (reageF lMapas)
 
+-- | load dos mapas a partir de uma lista com o nome dos mesmos
+loadMapaRec :: [FilePath] -> Int -> IO ([(String,Int)])
+loadMapaRec [] n = return []
+loadMapaRec [path] n = do
+                        mapa <- readFile ("./levels/" ++ path)
+                        let linhasM = lines mapa
+                        let erros = verificaMapa linhasM
+                        if(erros/=[]) then putStr (path ++ " errors in lines:" ++ concat erros ++ "\nLevel not loaded!\n")
+                        else putStr [] 
+                        if (erros==[]) then return [(mapa,n)]
+                        else return []
+loadMapaRec (path:paths) n = do
+                            mapa <- readFile ("./levels/" ++ path)
+                            let linhasM = lines mapa
+                            let erros = verificaMapa linhasM
+                            if(erros/=[]) then putStr (path ++ " errors in lines:" ++ concat erros ++ "\nLevel not loaded!\n")
+                            else putStr []
+                            mapas <- if(erros==[]) then loadMapaRec paths (n+1)
+                                                   else loadMapaRec paths n
+                            if (erros==[]) then return ((mapa,n):mapas)
+                                           else return mapas
+
 -- | load dos mapas para o jogo
-loadMapas :: IO ([String])
+loadMapas :: IO ([(String,Int)])
 loadMapas = do
-              mcp1 <- readFile "./levels/level1"
-              mcp2 <- readFile "./levels/level2"
-              mcp3 <- readFile "./levels/level3"
-              mcp4 <- readFile "./levels/level4"
-              mcp5 <- readFile "./levels/level5"
-              return [mcp1,mcp2,mcp3,mcp4,mcp5]
+              paths <- listDirectory "./levels/"
+              mapas <- loadMapaRec paths 0
+              if(mapas==[]) then error "No levels or invalid levels on levels folder!!"
+              else return mapas
 
 -- | possibilita o jogador escolher o tema
 escolheTema :: IO (Picture,Picture,Picture,Picture,Picture)
@@ -106,18 +126,8 @@ escolheTema = do
                                                return (boneco,caixa,parede,pf,caixaf)
                                         else escolheTema                             
 
--- | possibilita o jogador escolher o nível
-escolheNivel :: [String] -> IO ((String,[String],Int))
-escolheNivel [mcp1,mcp2,mcp3,mcp4,mcp5] = do 
-                 putStrLn "Select level (1,2,3,4,5): "
-                 nivel <- getLine
-                 if nivel=="1" then return (mcp1,mapas,1)
-                    else if nivel=="2" then return (mcp2,mapas,2)
-                         else if nivel=="3" then return (mcp3,mapas,3)
-                              else if nivel=="4" then return (mcp4,mapas,4)
-                                   else if nivel=="5" then return (mcp5,mapas,5)
-                                        else escolheNivel mapas
-                 where mapas = [mcp1,mcp2,mcp3,mcp4,mcp5]
+escolheNivel :: [(String,Int)] -> IO ((String,[(String,Int)],Int))
+escolheNivel ((mapa,n):mapas) = return (mapa,((mapa,n):mapas),n)
 
 -- | define o mapa inicial e alguns valores necessários
 defMI :: String -> Int -> Mapa
@@ -195,7 +205,7 @@ stateGame (xMapa,yMapa) fon = if fon==True
                               else  Translate (((toEnum xMapa)/2)+30) (80) $ Scale (0.15) (0.15) $ Color red $ Text "Level incomplete..."
 
 -- | funçao que reage ao 'teclar' do jogador
-reageF :: [String] -> Event -> Mapa -> Mapa
+reageF :: [(String,Int)] -> Event -> Mapa -> Mapa
 reageF lMapas (EventKey (Char 'r') Down _ _) mapaIns = restart mapaIns --restart
 reageF lMapas (EventKey (Char 'R') Down _ _) mapaIns = restart mapaIns --restart
 reageF lMapas (EventKey (Char 'u') Down _ _) (tMapa,((xBoneco,yBoneco):t),[c],n,ms,tab,fon,nMapa) = (tMapa,((xBoneco,yBoneco):t),[c],n,ms,tab,fon,nMapa) -- undo
@@ -217,20 +227,22 @@ undo :: Mapa -> Mapa
 undo (tMapa,[(xBoneco,yBoneco)],[coords],n,ms,tab,fon,nMapa) = (tMapa,[(xBoneco,yBoneco)],[coords],n,ms,tab,fon,nMapa)
 undo (tMapa,((xBoneco,yBoneco):t),(c:cs),n,ms,tab,fon,nMapa) = (tMapa,t,(c:cs),n-1,colocaCaixas tab c,tab,verificarCI (colocaCaixas tab c),nMapa)
 
+-- | obtem o mapa consoante o número da lista de mapas
+getMapa :: [(String,Int)] -> Int -> String
+getMapa [] x = []
+getMapa ((mapa,n):mapas) x = if(n==x) then mapa
+                             else getMapa mapas x
+
 -- | permite passar para o mapa anterior ou seguinte
-mcpMapa :: [String] -> Int -> Mapa -> Event -> Mapa
-mcpMapa [mcp1,mcp2,mcp3,mcp4,mcp5] nMapa fazmove (EventKey (Char 'n') Down _ _) -- mapa seguinte
-      |nMapa==1 = defMI mcp2 2
-      |nMapa==2 = defMI mcp3 3
-      |nMapa==3 = defMI mcp4 4
-      |nMapa==4 = defMI mcp5 5
-      |nMapa==5 = defMI mcp1 1
-mcpMapa [mcp1,mcp2,mcp3,mcp4,mcp5] nMapa fazmove (EventKey (Char 'b') Down _ _) -- mapa anterior
-      |nMapa==1 = defMI mcp5 5
-      |nMapa==2 = defMI mcp1 1
-      |nMapa==3 = defMI mcp2 2
-      |nMapa==4 = defMI mcp3 3
-      |nMapa==5 = defMI mcp4 4
+mcpMapa :: [(String,Int)] -> Int -> Mapa -> Event -> Mapa
+mcpMapa lMapas nMapa fazmove (EventKey (Char 'n') Down _ _) = if(getMapa lMapas (nMapa+1)==[]) then defMI newMapaF 0
+                                                              else defMI newMapa (nMapa+1)
+                                                              where (newMapaF,n) = head(lMapas)
+                                                                    newMapa = getMapa lMapas (nMapa+1)
+mcpMapa lMapas nMapa fazmove (EventKey (Char 'b') Down _ _) = if(nMapa==0) then defMI newMapaL nL
+                                                              else defMI newMapa (nMapa-1)
+                                                              where (newMapaL,nL) = last(lMapas)
+                                                                    newMapa = getMapa lMapas (nMapa-1)
 mcpMapa _ nMapa fazmove _ = fazmove
 
 -- | Reage ao pressionar das setas do teclado, movendo o boneco 40 pixéis numa direção
@@ -455,3 +467,172 @@ verificalinha [] = True
 verificalinha (x:xs) 
         |(ord x)== 72 = False
         |otherwise = verificalinha xs 
+
+-- | verifica se um dado mapa é valido ou não.
+verificaMapa :: [String] -> [String]
+verificaMapa linhas = if erro<0
+                 then []
+                 else [show erro]
+            where erro = vErros linhas
+
+-- | Devolve o nº da linha que dá erro.
+vErros :: [String] -> Int
+vErros linhas = juntaErros okTab (juntaErros oklength (juntaErros okCoords (juntaErros okCoordsT (juntaErros okCaixas (juntaErros okBoneco okCaixasR)))))
+    where
+    (tab,coords) = parteMapa linhas
+    okTab = validaTab 1 tab (contaListasMapa tab)
+    okCoords = validaCoords tab (remInc coords) 1
+    okCaixas = validaCaixas tab (remVazio coords)
+    oklength = verificalength tab 1
+    okCoordsT = validaCoordsT coords 1 (contaListasMapa tab)
+    okBoneco = validaBoneco (daCoords 0 (reverse tab) 0) (tuploCoord (remInc coords)) (contaListasMapa tab)
+    okCaixasR = validaCaixasR (tuploCoord (remInc coords)) (drop 1 (tuploCoord (remInc coords))) (contaListasMapa tab) 2
+
+{- | Devolve o nº de linhas de coordenadas.
+
+Nesta função usamos /isDigit/ pertencente ao Data.Char para verificarmos se o elemento é ou não um algarismo (0,...9). -}
+contaListasBC :: [String] -> Int
+contaListasBC [] = 0
+contaListasBC (x:xs)
+        |(null x)==True = contaListasBC xs
+        |isDigit (head x)==True = 1 + contaListasBC xs 
+        |otherwise = contaListasBC xs
+
+-- | Dá o nº da linha com o erro apos verificar as linhas do tabuleiro
+validaTab :: Int -> [String] -> Int -> Int
+validaTab pos [] m = -1
+validaTab pos (l:ls) m = juntaErros erroLinhaTab erroLinhasTab
+        where
+        erroLinhaTab = validaLinhaTab pos l m
+        erroLinhasTab = validaTab (pos+1) ls m
+
+-- | Função que verifica se o tamanho das listas no tabuleiro é sempre igual.
+verificalength :: [String] -> Int -> Int
+verificalength [] n = -1
+verificalength [l,lt] n
+            |(length l)==(length lt) = -1
+            |otherwise = n+1
+verificalength (a:b:ab) n
+            |(length a)==(length b) = verificalength (b:ab) (n+1)
+            |otherwise = n+1
+
+{- | Testa uma linha do tabuleiro. 
+
+Nesta função usamos /ord/ que pertence ao Data.Char...
+
+@
+ord :: Char -> Int
+@
+
+Exemplos de utilização:
+
+Se o char 'a' for um # então:
+@
+ord a == 35
+@
+Se o char 'a' for um espaço então:
+@
+ord a == 32
+@
+Se o char 'a' for um . então:
+@
+ord a == 46
+@
+-}
+validaLinhaTab :: Int -> String -> Int -> Int
+validaLinhaTab pos [] m = -1
+validaLinhaTab pos (a:b) m |pos==1 && ord a == 35 = validaLinhaTab pos b m
+                           |pos==m && ord a == 35 = validaLinhaTab pos b m
+                           |pos>1 && pos<m && ord a == 35 && ord(last (a:b)) == 35 = aux pos b 
+                           |otherwise = pos
+                  where aux :: Int -> String -> Int
+                        aux pos [] = -1
+                        aux pos (x:xs) |ord x == 35 || ord x == 32 || ord x == 46 = aux pos xs
+                                       |otherwise = pos 
+
+-- | Testa as coordenadas e devolve a linha em caso de haver erros.
+validaCoords :: [String] -> [String] -> Int -> Int
+validaCoords _ [] n = -1
+validaCoords (x:xs) (h:t) n = if (fst (liToT (sToI h))) == -1 
+                              then -1
+                              else if ord (devolveCaracter (contalinhas (x:xs) (snd (liToT (sToI h))) 0 (contaListasMapa (x:xs))) (fst (liToT (sToI h))) 0) == 32 || ord (devolveCaracter (contalinhas (x:xs) (snd (liToT (sToI h))) 0 (contaListasMapa (x:xs))) (fst (liToT (sToI h))) 0) == 46 
+                                   then validaCoords (x:xs) t (n+1)
+                                   else contaListasMapa (x:xs) + n  
+
+-- | Verifica se o boneco está dentro do mapa.
+validaBoneco :: [(Int,Int)] -> [(Int,Int)] -> Int -> Int
+validaBoneco (x:xs) [] m = m+1
+validaBoneco [] _ m = m+1 
+validaBoneco (x:xs) (y:ys) m
+            |snd(x)==snd(y) && fst(x)==fst(y) = -1
+            |otherwise = validaBoneco xs (y:ys) m
+
+-- | Verifica se as coordenadas são válidas, ou seja, se são dois números...
+validaCoordsT :: [String] -> Int -> Int -> Int
+validaCoordsT [] n m = -1
+validaCoordsT (x:xs) n m
+             |(length (words x)) == 0 = validaCoordsT xs (n+1) m
+             |(length (words x)) /= 2 = m+n
+             |aux x == False = m+n
+             |otherwise = validaCoordsT xs (n+1) m
+             where aux :: String -> Bool
+                   aux [] = True
+                   aux (x:xs) = if (isDigit x) || x==' ' 
+                                then aux xs 
+                                else False 
+
+-- | Devolve o caracter de uma certa lista
+devolveCaracter :: String -> Int -> Int -> Char
+devolveCaracter [] p n = ' '
+devolveCaracter (x:xs) p n
+        |n==p = x
+        |otherwise =devolveCaracter xs p (n+1) 
+       
+-- | Devolve a linha correspondente ao número mas contando de baixo para cima...
+contalinhas :: [String] -> Int -> Int -> Int -> String
+contalinhas [] p n m = [] 
+contalinhas (x:xs) p n m
+        |n==(m-p-1) = x
+        |otherwise = contalinhas xs p (n+1) m
+
+-- | Verifica a correspondencia entre nº de pontos no tabuleiro e coordenadas.
+validaCaixas :: [String] -> [String] -> Int
+validaCaixas (x:xs) (y:ys) 
+        |(contaListasBC (y:ys)-1) == numeroPontos (x:xs) = -1
+        |(contaListasBC (y:ys)-1) > numeroPontos (x:xs) = (contaListasMapa (x:xs)) + numeroPontos (x:xs) + 2
+        |(contaListasBC (y:ys)-1) < numeroPontos (x:xs) = (contaListasMapa (x:xs)) + contaListasBC (y:ys) + 1
+validaCaixas _ _ = 1
+
+-- | Devolve o número de pontos existentes no mapa
+numeroPontos :: [String] -> Int
+numeroPontos [] = 0
+numeroPontos (h:t) = aux h + numeroPontos t
+          where aux :: String -> Int
+                aux [] = 0
+                aux (h:t)
+                    |ord h == 46 = 1 + aux t
+                    |otherwise = aux t
+
+-- | verifica se existe ou nao uma caixa sobreposta sobre o boneco ou sobre uma caixa.
+validaCaixasR :: [(Int,Int)] -> [(Int,Int)] -> Int -> Int -> Int
+validaCaixasR [] _ m n = -1
+validaCaixasR _ [] m n = -1
+validaCaixasR (x:xs) (y:ys) m n = juntaErros (aux x (y:ys) m n) (validaCaixasR xs ys m (n+1)) 
+      where aux :: (Int,Int) -> [(Int,Int)] -> Int -> Int -> Int
+            aux (x,y) [] m n = -1
+            aux (x,y) (z:zs) m n
+                  |x==fst(z) && y==snd(z) = m+n
+                  |otherwise = aux (x,y) zs m (n+1)
+
+-- | Dá o erro com menor
+juntaErros :: Int -> Int -> Int
+juntaErros i j | i<0=j
+               | j<0=i
+               | otherwise = min i j
+
+-- | Remove listas vazias.
+remVazio :: [String] -> [String]
+remVazio [] = []
+remVazio (x:xs)
+        |x=="" = remVazio xs
+        |otherwise =x:(remVazio xs)
