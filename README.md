@@ -1,6 +1,6 @@
 # ![Sokoban](screenshots/logo.png)
 
-[Sokoban](https://sokoban.info/) is a puzzle game invented in Japan. The objective of the game is to push crates to their proper locations with minimum number of moves.
+[Sokoban](https://sokoban.info/) is a puzzle game invented in Japan. The objective of the game is to push crates to their proper locations in the minimum number of moves.
 
 This project was done for Computer Laboratories I at **Universidade do Minho** using [**Haskell**](https://www.haskell.org/).
 
@@ -19,14 +19,14 @@ The game have different themes:
 - Link 
 ![Link](screenshots/link.png)
 
-The game have 5 different levels for now, but you can add more levels. To create a map follow this tips:
+The game has 5 different levels (for now), but you can add more levels. To create a map follow this steps:
 - create a text file
-- '#' corresponds to a wall block
-- '.' corresponds to where should be the final places of the crates
-- after draw the map the first line should have the initial coordenates of the player (first height, second width, starts from the left inferior corner of the map witch corresponds to the position 0 0)
-- after that should have in each line the coordinates of each crate(with same caracteristics of player coordinates)
-- save the map in *levels* folder, but **be careful** to not overwrite levels already added/present to the folder
-- the game on loading time checks if the map is valid, if not the game will output the line/s where is the error/s
+    - '#' corresponds to a wall block
+    - '.' corresponds to where should be the final places of the crates
+- after drawing the map, the first line should have the initial coordinates of the player (first height, second width, starting from the bottom left corner of the map witch corresponds to the position 0 0)
+- after that each line should have the coordinates of each crate(with same caracteristics of player coordinates)
+- save the map in *levels* folder, but **be careful** not to overwrite levels already added/present to the folder
+- the game on loading time checks if the map is valid, if not the game will output the lines where errors where found
 
 Example of a map:
 ```
@@ -56,7 +56,7 @@ Result of this map:
 During a level you can:
 - restart: pressing 'r'
 - undo: pressing 'u'
-- go to prev level: pressing 'b'
+- go to previous level: pressing 'b'
 - go to next level: pressing 'n'
 
 ## Setup
@@ -74,7 +74,7 @@ During a level you can:
 
 ### Run
 
-After building go to the *build* folder(inside the cloned folder) and run *Sokoban* executable file in command line: `./Sokoban`
+After building go to the *build* folder(inside the cloned folder) and run *Sokoban* binary file in the command line: `./Sokoban`
 
 ## License
 
