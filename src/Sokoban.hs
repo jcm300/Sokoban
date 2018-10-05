@@ -150,42 +150,26 @@ reageTempo t m = m
 
 -- | Desenha o jogo dentro da janela
 desenhaMapa :: (Picture,Picture,Picture,Picture,Picture) -> Picture -> Mapa -> Picture
-desenhaMapa (boneco,caixa,parede,pf,caixaf) title ((xMapa,yMapa),((x,y):t),coords,n,ms,semCardTab,fon,nMapa) = Pictures [instrucoes,titulo,made,paredesCPf,figuraBoneco,score,sG]
+desenhaMapa (boneco,caixa,parede,pf,caixaf) title ((xMapa,yMapa),((x,y):t),_,n,ms,_,fon,_) = Pictures [instrucoes,titulo,made,paredesCPf,figuraBoneco,score,sG]
     where
+    xPosition = ((toEnum xMapa)/2)
     -- desenha Titulo do Jogo
-    titulo = Translate (((toEnum xMapa)/2)+115) 215 $ 
-             Scale (0.25) (0.25) $ 
-             title
+    titulo = Translate (xPosition+115) 215 $ Scale (0.25) (0.25) $ title
     --made by
-    made = Color black $ 
-           Pictures [Translate (((toEnum xMapa)/2)+32) (150) $ Scale (0.15) (0.15) $ Text "made by: Jose Carlos Lima Martins"]
+    made = Color black $ Pictures [Translate (xPosition+32) (150) $ Scale (0.15) (0.15) $ Text "made by: Jose Carlos Lima Martins"]
     -- desenhas as instruçoes
-    instrucoes = Pictures [Translate (((toEnum xMapa)/2)+30) 0 $ Color (makeColor 0 0 0 0.2) $ Polygon [(0,-500),(400,-500),(400,500),(0,500)],insmapaPrevious,insmapaNext,insundo,insrestart]
-    insmapaPrevious = Color black $ 
-                      Translate (((toEnum xMapa)/2)+32) (-40) $
-                      Scale (0.15) (0.15) $
-                      Text "'b' : prev level"
-    insmapaNext = Color black $
-                  Translate (((toEnum xMapa)/2)+32) (-80) $
-                  Scale (0.15) (0.15) $
-                  Text "'n' : next level"
-    insundo = Color black $
-              Translate (((toEnum xMapa)/2)+32) (-120) $
-              Scale (0.15) (0.15) $
-              Text "'u' : undo"
-    insrestart = Color black $
-                 Translate (((toEnum xMapa)/2)+32) (-160) $
-                 Scale (0.15) (0.15) $
-                 Text "'r' : restart"
+    instrucoes = Pictures [rectangle,insmapaPrevious,insmapaNext,insundo,insrestart]
+    rectangle = Translate (xPosition+30) 0 $ Color (makeColor 0 0 0 0.2) $ Polygon [(0,-500),(400,-500),(400,500),(0,500)]
+    insmapaPrevious = Color black $ Translate (xPosition+32) (-40) $ Scale (0.15) (0.15) $ Text "'b' : prev level"
+    insmapaNext = Color black $ Translate (xPosition+32) (-80) $ Scale (0.15) (0.15) $ Text "'n' : next level"
+    insundo = Color black $ Translate (xPosition+32) (-120) $ Scale (0.15) (0.15) $ Text "'u' : undo"
+    insrestart = Color black $ Translate (xPosition+32) (-160) $ Scale (0.15) (0.15) $ Text "'r' : restart"
     -- desenha boneco
     figuraBoneco = Translate (toEnum x) (toEnum y) boneco
     -- desenha caixas, paredes e posiçoes finais
     paredesCPf = desenhaTab ms (-((fromIntegral xMapa)/2),(fromIntegral yMapa)/2) (parede,pf,caixa,caixaf)
     -- desenha score
-    score = Color red $
-            Translate (((toEnum xMapa)/2)+40) (0) $
-            Scale (0.25) (0.25) $
-            Text ("Moves: " ++ show n)
+    score = Color red $ Translate (xPosition+40) (0) $ Scale (0.25) (0.25) $ Text ("Moves: " ++ show n)
     -- desenha estado do nivel
     sG = stateGame (xMapa,yMapa) fon
 
@@ -211,10 +195,10 @@ stateGame ::(Int,Int) -> Bool -> Picture
 stateGame (xMapa,yMapa) fon = if fon==True 
                               then  Color (makeColorI 0 128 0 1) $
                                     Pictures [Translate (((toEnum xMapa)/2)+30) (80) $
-                                    Scale (0.15) (0.15) $
-                                    Text "LEVEL COMPLETE.", Translate (((toEnum xMapa)/2)+30) (60) $
-                                    Scale (0.15) (0.15) $
-                                    Text "Try another one ('b','n')."]
+                                              Scale (0.15) (0.15) $
+                                              Text "LEVEL COMPLETE.", Translate (((toEnum xMapa)/2)+30) (60) $
+                                              Scale (0.15) (0.15) $
+                                              Text "Try another one ('b','n')."]
                               else  Translate (((toEnum xMapa)/2)+30) (80) $
                                     Scale (0.15) (0.15) $
                                     Color red $
@@ -224,19 +208,19 @@ stateGame (xMapa,yMapa) fon = if fon==True
 reageF :: [(String,Int)] -> Event -> Mapa -> Mapa
 reageF lMapas (EventKey (Char 'r') Down _ _) mapaIns = restart mapaIns --restart
 reageF lMapas (EventKey (Char 'R') Down _ _) mapaIns = restart mapaIns --restart
-reageF lMapas (EventKey (Char 'u') Down _ _) (tMapa,((xBoneco,yBoneco):t),[c],n,ms,tab,fon,nMapa) = (tMapa,((xBoneco,yBoneco):t),[c],n,ms,tab,fon,nMapa) -- undo
-reageF lMapas (EventKey (Char 'U') Down _ _) (tMapa,((xBoneco,yBoneco):t),[c],n,ms,tab,fon,nMapa) = (tMapa,((xBoneco,yBoneco):t),[c],n,ms,tab,fon,nMapa) -- undo
-reageF lMapas (EventKey (Char 'u') Down _ _) (tMapa,((xBoneco,yBoneco):t),(c:cs),n,ms,tab,fon,nMapa) = undo (tMapa,((xBoneco,yBoneco):t),cs,n,ms,tab,fon,nMapa) -- undo
-reageF lMapas (EventKey (Char 'U') Down _ _) (tMapa,((xBoneco,yBoneco):t),(c:cs),n,ms,tab,fon,nMapa) = undo (tMapa,((xBoneco,yBoneco):t),cs,n,ms,tab,fon,nMapa) -- undo
-reageF lMapas e (tMapa,((xBoneco,yBoneco):t),(c:cs),n,ms,tab,fon,nMapa)
+reageF lMapas (EventKey (Char 'u') Down _ _) (tMapa,coordsBoneco,[c],n,ms,tab,fon,nMapa) = (tMapa,coordsBoneco,[c],n,ms,tab,fon,nMapa) -- undo
+reageF lMapas (EventKey (Char 'U') Down _ _) (tMapa,coordsBoneco,[c],n,ms,tab,fon,nMapa) = (tMapa,coordsBoneco,[c],n,ms,tab,fon,nMapa) -- undo
+reageF lMapas (EventKey (Char 'u') Down _ _) (tMapa,coordsBoneco,(c:cs),n,ms,tab,fon,nMapa) = undo (tMapa,coordsBoneco,cs,n,ms,tab,fon,nMapa) -- undo
+reageF lMapas (EventKey (Char 'U') Down _ _) (tMapa,coordsBoneco,(c:cs),n,ms,tab,fon,nMapa) = undo (tMapa,coordsBoneco,cs,n,ms,tab,fon,nMapa) -- undo
+reageF lMapas e (tMapa,coordsBoneco,(c:cs),n,ms,tab,fon,nMapa)
       |fon==True = mcpMapa lMapas nMapa (mapaIns) e
       |otherwise = mcpMapa lMapas nMapa (reageEvento e mapaIns) e
-      where mapaIns = (tMapa,((xBoneco,yBoneco):t),(c:cs),n,ms,tab,fon,nMapa)
+      where mapaIns = (tMapa,coordsBoneco,(c:cs),n,ms,tab,fon,nMapa)
 
 -- | funçao restart que reinicia o nivel
 restart :: Mapa -> Mapa
-restart (tMapa,((xBoneco,yBoneco):t),[c],n,ms,tab,fon,nMapa) = (tMapa,((xBoneco,yBoneco):t),[c],n,ms,tab,fon,nMapa)
-restart (tMapa,((xBoneco,yBoneco):t),(c:cs),n,ms,tab,fon,nMapa) = restart (undo (tMapa,((xBoneco,yBoneco):t),cs,n,ms,tab,fon,nMapa))
+restart (tMapa,coordsBoneco,[c],n,ms,tab,fon,nMapa) = (tMapa,coordsBoneco,[c],n,ms,tab,fon,nMapa)
+restart (tMapa,coordsBoneco,(c:cs),n,ms,tab,fon,nMapa) = restart (undo (tMapa,coordsBoneco,cs,n,ms,tab,fon,nMapa))
 
 -- | funçao undo que volta um passo atrás
 undo :: Mapa -> Mapa
@@ -267,54 +251,66 @@ reageEvento (EventKey (SpecialKey KeyDown)    Down _ _) (tMapa,coordsB,coords,n,
                                 |devolveCD1 == '#' = mapaI
                                 |devolveCD1 == 'H' || devolveCD1 == 'I' = if(devolveCD2 == '#' || devolveCD2 == 'H' || devolveCD2 == 'I') 
                                                                           then mapaI
-                                                                          else (tMapa,moveBD:coordsB,mudaCD:coords,n+1,colocaCaixas tab mudaCD,tab,verificarCI (colocaCaixas tab mudaCD),nMapa)
-                                |otherwise = (tMapa,moveBD:coordsB,mudaCD:coords,n+1,colocaCaixas tab mudaCD,tab,verificarCI (colocaCaixas tab mudaCD),nMapa)
+                                                                          else (tMapa,moveBD:coordsB,mudaCD:coords,n+1, mapaComCaixas,tab,verificarCI mapaComCaixas,nMapa)
+                                |otherwise = (tMapa,moveBD:coordsB,mudaCD:coords,n+1,mapaComCaixas,tab,verificarCI mapaComCaixas,nMapa)
                                 where
                                 ((xBoneco,yBoneco):t) = coordsB
-                                devolveCD1 = devolveCaracterB (contalinhasB (reverse ms) ((convY tMapa yBoneco)-1) 0) (convX tMapa xBoneco) 0
-                                devolveCD2 = devolveCaracterB (contalinhasB (reverse ms) ((convY tMapa yBoneco)-2) 0) (convX tMapa xBoneco) 0
+                                mapaComCaixas = colocaCaixas tab mudaCD
+                                coordX = convX tMapa xBoneco
+                                coordY = convY tMapa yBoneco
+                                devolveCD1 = devolveCaracterB (contalinhasB (reverse ms) (coordY-1) 0) coordX 0
+                                devolveCD2 = devolveCaracterB (contalinhasB (reverse ms) (coordY-2) 0) coordX 0
                                 mapaI = (tMapa,coordsB,coords,n,ms,tab,fon,nMapa)
                                 moveBD = moveBoneco (0,-tBCPi) (xBoneco,yBoneco)
-                                mudaCD = mudaCoordsCaixas (convX tMapa xBoneco) ((convY tMapa yBoneco)-1) (head coords) D
+                                mudaCD = mudaCoordsCaixas coordX (coordY-1) (head coords) D
 reageEvento (EventKey (SpecialKey KeyUp)  Down _ _) (tMapa,coordsB,coords,n,ms,tab,fon,nMapa)
                                 |devolveCU1 == '#' = mapaI
                                 |devolveCU1 == 'H' || devolveCU1 == 'I' = if(devolveCU2 == '#' || devolveCU2 == 'H' || devolveCU2 == 'I') 
                                                                           then mapaI
-                                                                          else (tMapa,moveBU:coordsB,mudaCU:coords,n+1,colocaCaixas tab mudaCU,tab,verificarCI (colocaCaixas tab mudaCU),nMapa)
-                                |otherwise = (tMapa,moveBU:coordsB,mudaCU:coords,n+1,colocaCaixas tab mudaCU,tab,verificarCI (colocaCaixas tab mudaCU),nMapa)
+                                                                          else (tMapa,moveBU:coordsB,mudaCU:coords,n+1,mapaComCaixas,tab,verificarCI mapaComCaixas,nMapa)
+                                |otherwise = (tMapa,moveBU:coordsB,mudaCU:coords,n+1,mapaComCaixas,tab,verificarCI mapaComCaixas,nMapa)
                                 where
                                 ((xBoneco,yBoneco):t) = coordsB
-                                devolveCU1 = devolveCaracterB (contalinhasB (reverse ms) ((convY tMapa yBoneco)+1) 0) (convX tMapa xBoneco) 0
-                                devolveCU2 = devolveCaracterB (contalinhasB (reverse ms) ((convY tMapa yBoneco)+2) 0) (convX tMapa xBoneco) 0
+                                mapaComCaixas = colocaCaixas tab mudaCU
+                                coordX = convX tMapa xBoneco
+                                coordY = convY tMapa yBoneco
+                                devolveCU1 = devolveCaracterB (contalinhasB (reverse ms) (coordY+1) 0) coordX 0
+                                devolveCU2 = devolveCaracterB (contalinhasB (reverse ms) (coordY+2) 0) coordX 0
                                 mapaI = (tMapa,coordsB,coords,n,ms,tab,fon,nMapa)
                                 moveBU = moveBoneco (0,tBCPi) (xBoneco,yBoneco)
-                                mudaCU = mudaCoordsCaixas (convX tMapa xBoneco) ((convY tMapa yBoneco)+1) (head coords) U
+                                mudaCU = mudaCoordsCaixas coordX (coordY+1) (head coords) U
 reageEvento (EventKey (SpecialKey KeyLeft)  Down _ _) (tMapa,coordsB,coords,n,ms,tab,fon,nMapa)
                                 |devolveCL1 == '#' = mapaI
                                 |devolveCL1 == 'H' || devolveCL1 == 'I' = if(devolveCL2 == '#' || devolveCL2 == 'H' || devolveCL2 == 'I') 
                                                                           then mapaI
-                                                                          else (tMapa,moveBL:coordsB,mudaCL:coords,n+1,colocaCaixas tab mudaCL,tab,verificarCI (colocaCaixas tab mudaCL),nMapa)
-                                |otherwise = (tMapa,moveBL:coordsB,mudaCL:coords,n+1,colocaCaixas tab mudaCL,tab,verificarCI (colocaCaixas tab mudaCL),nMapa)
+                                                                          else (tMapa,moveBL:coordsB,mudaCL:coords,n+1,mapaComCaixas,tab,verificarCI mapaComCaixas,nMapa)
+                                |otherwise = (tMapa,moveBL:coordsB,mudaCL:coords,n+1,mapaComCaixas,tab,verificarCI mapaComCaixas,nMapa)
                                 where
                                 ((xBoneco,yBoneco):t) = coordsB
-                                devolveCL1 = devolveCaracterB (contalinhasB (reverse ms) (convY tMapa yBoneco) 0) ((convX tMapa xBoneco)-1) 0
-                                devolveCL2 = devolveCaracterB (contalinhasB (reverse ms) (convY tMapa yBoneco) 0) ((convX tMapa xBoneco)-2) 0
+                                mapaComCaixas = colocaCaixas tab mudaCL
+                                coordX = convX tMapa xBoneco
+                                coordY = convY tMapa yBoneco
+                                devolveCL1 = devolveCaracterB (contalinhasB (reverse ms) coordY 0) (coordX-1) 0
+                                devolveCL2 = devolveCaracterB (contalinhasB (reverse ms) coordY 0) (coordX-2) 0
                                 mapaI = (tMapa,coordsB,coords,n,ms,tab,fon,nMapa)
                                 moveBL = moveBoneco (-tBCPi,0) (xBoneco,yBoneco)
-                                mudaCL = mudaCoordsCaixas ((convX tMapa xBoneco)-1) (convY tMapa yBoneco) (head coords) L
+                                mudaCL = mudaCoordsCaixas (coordX-1) coordY (head coords) L
 reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (tMapa,coordsB,coords,n,ms,tab,fon,nMapa)
                                 |devolveCR1 == '#' = mapaI
                                 |devolveCR1 == 'H' || devolveCR1 == 'I' = if(devolveCR2 == '#' || devolveCR2 == 'H' || devolveCR2 == 'I') 
                                                                           then mapaI
-                                                                          else (tMapa,moveBR:coordsB,mudaCR:coords,n+1,colocaCaixas tab mudaCR,tab,verificarCI (colocaCaixas tab mudaCR),nMapa)
-                                |otherwise = (tMapa,moveBR:coordsB,mudaCR:coords,n+1,colocaCaixas tab mudaCR,tab,verificarCI (colocaCaixas tab mudaCR),nMapa)
+                                                                          else (tMapa,moveBR:coordsB,mudaCR:coords,n+1,mapaComCaixas,tab,verificarCI mapaComCaixas,nMapa)
+                                |otherwise = (tMapa,moveBR:coordsB,mudaCR:coords,n+1,mapaComCaixas,tab,verificarCI mapaComCaixas,nMapa)
                                 where
                                 ((xBoneco,yBoneco):t) = coordsB
-                                devolveCR1 = devolveCaracterB (contalinhasB (reverse ms) (convY tMapa yBoneco) 0) ((convX tMapa xBoneco)+1) 0
-                                devolveCR2 = devolveCaracterB (contalinhasB (reverse ms) (convY tMapa yBoneco) 0) ((convX tMapa xBoneco)+2) 0
+                                mapaComCaixas = colocaCaixas tab mudaCR
+                                coordX = convX tMapa xBoneco
+                                coordY = convY tMapa yBoneco
+                                devolveCR1 = devolveCaracterB (contalinhasB (reverse ms) coordY 0) (coordX+1) 0
+                                devolveCR2 = devolveCaracterB (contalinhasB (reverse ms) coordY 0) (coordX+2) 0
                                 mapaI = (tMapa,coordsB,coords,n,ms,tab,fon,nMapa)
                                 moveBR = moveBoneco (tBCPi,0) (xBoneco,yBoneco)
-                                mudaCR = mudaCoordsCaixas ((convX tMapa xBoneco)+1) (convY tMapa yBoneco) (head coords) R
+                                mudaCR = mudaCoordsCaixas (coordX+1) coordY (head coords) R
 reageEvento _ mapa = mapa -- ignora qualquer outro evento
 
 -- | Move o boneco uma coordenada para o lado
@@ -531,6 +527,7 @@ validaTab pos (l:ls) m = juntaErros erroLinhaTab erroLinhasTab
 -- | Função que verifica se o tamanho das listas no tabuleiro é sempre igual.
 verificalength :: [String] -> Int -> Int
 verificalength [] n = -1
+verificalength [l] n = -1
 verificalength [l,lt] n
             |(length l)==(length lt) = -1
             |otherwise = n+1
