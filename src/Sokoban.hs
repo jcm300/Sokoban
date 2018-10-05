@@ -85,46 +85,34 @@ escolheTema = do
                 putStrLn "Select theme (Classic,Mario,Luigi,Zelda,Link): "
                 theme <- getLine
                 if theme=="Classic" 
-                    then do
-                           boneco <- loadBMP "./images/classicB.bmp"
-                           caixa <- loadBMP "./images/classicC.bmp"
-                           parede <- loadBMP "./images/classicP.bmp"
-                           pf <- loadBMP "./images/classicPF.bmp"
-                           caixaf <- loadBMP "./images/classicCF.bmp"
-                           return (boneco,caixa,parede,pf,caixaf)
-                    else if theme=="Mario" 
-                         then do
-                                boneco <- loadBMP "./images/marioB.bmp"
-                                caixa <- loadBMP "./images/marioC.bmp"
-                                parede <- loadBMP "./images/marioP.bmp"
-                                pf <- loadBMP "./images/marioPF.bmp"
-                                caixaf <- loadBMP "./images/marioCF.bmp"
-                                return (boneco,caixa,parede,pf,caixaf)
-                         else if theme=="Luigi"
-                              then do
-                                     boneco <- loadBMP "./images/luigiB.bmp"
-                                     caixa <- loadBMP "./images/marioC.bmp"
-                                     parede <- loadBMP "./images/marioP.bmp"
-                                     pf <- loadBMP "./images/marioPF.bmp"
-                                     caixaf <- loadBMP "./images/marioCF.bmp"
-                                     return (boneco,caixa,parede,pf,caixaf)
-                              else if theme=="Zelda"
-                                   then do
-                                          boneco <- loadBMP "./images/ZeldaB.bmp"
-                                          caixa <- loadBMP "./images/linkC.bmp"
-                                          parede <- loadBMP "./images/linkP.bmp"
-                                          pf <- loadBMP "./images/linkPF.bmp"
-                                          caixaf <- loadBMP "./images/linkCF.bmp"
-                                          return (boneco,caixa,parede,pf,caixaf)
-                                   else if theme=="Link"
-                                        then do
-                                               boneco <- loadBMP "./images/linkB.bmp"
-                                               caixa <- loadBMP "./images/linkC.bmp"
-                                               parede <- loadBMP "./images/linkP.bmp"
-                                               pf <- loadBMP "./images/linkPF.bmp"
-                                               caixaf <- loadBMP "./images/linkCF.bmp"
-                                               return (boneco,caixa,parede,pf,caixaf)
-                                        else escolheTema                             
+                then do
+                       boneco <- loadBMP "./images/classicB.bmp"
+                       caixa <- loadBMP "./images/classicC.bmp"
+                       parede <- loadBMP "./images/classicP.bmp"
+                       pf <- loadBMP "./images/classicPF.bmp"
+                       caixaf <- loadBMP "./images/classicCF.bmp"
+                       return (boneco,caixa,parede,pf,caixaf)
+                else if (theme=="Mario"  || theme=="Luigi")
+                     then do
+                            boneco <- if(theme=="Mario")
+                                      then loadBMP "./images/marioB.bmp"
+                                      else loadBMP "./images/luigiB.bmp"
+                            caixa <- loadBMP "./images/marioC.bmp"
+                            parede <- loadBMP "./images/marioP.bmp"
+                            pf <- loadBMP "./images/marioPF.bmp"
+                            caixaf <- loadBMP "./images/marioCF.bmp"
+                            return (boneco,caixa,parede,pf,caixaf)
+                     else if (theme=="Zelda" || theme=="Link")
+                          then do
+                                  boneco <- if(theme=="Zelda")
+                                            then loadBMP "./images/ZeldaB.bmp"
+                                            else loadBMP "./images/linkB.bmp"
+                                  caixa <- loadBMP "./images/linkC.bmp"
+                                  parede <- loadBMP "./images/linkP.bmp"
+                                  pf <- loadBMP "./images/linkPF.bmp"
+                                  caixaf <- loadBMP "./images/linkCF.bmp"
+                                  return (boneco,caixa,parede,pf,caixaf)
+                          else escolheTema                             
 
 escolheNivel :: [(String,Int)] -> IO ((String,[(String,Int)],Int))
 escolheNivel ((mapa,n):mapas) = return (mapa,((mapa,n):mapas),n)
@@ -165,44 +153,72 @@ desenhaMapa :: (Picture,Picture,Picture,Picture,Picture) -> Picture -> Mapa -> P
 desenhaMapa (boneco,caixa,parede,pf,caixaf) title ((xMapa,yMapa),((x,y):t),coords,n,ms,semCardTab,fon,nMapa) = Pictures [instrucoes,titulo,made,paredesCPf,figuraBoneco,score,sG]
     where
     -- desenha Titulo do Jogo
-    titulo = Translate (((toEnum xMapa)/2)+115) 215 $ Scale (0.25) (0.25) $ title --Translate (((toEnum xMapa)/2)+30) (200) $ Scale (0.50) (0.50) $ Color magenta $ Text "Sokoban" 
+    titulo = Translate (((toEnum xMapa)/2)+115) 215 $ 
+             Scale (0.25) (0.25) $ 
+             title
     --made by
-    made = Color black $ Pictures [Translate (((toEnum xMapa)/2)+32) (150) $ Scale (0.15) (0.15) $ Text "made by: Jose Carlos Lima Martins"]
+    made = Color black $ 
+           Pictures [Translate (((toEnum xMapa)/2)+32) (150) $ Scale (0.15) (0.15) $ Text "made by: Jose Carlos Lima Martins"]
     -- desenhas as instruçoes
     instrucoes = Pictures [Translate (((toEnum xMapa)/2)+30) 0 $ Color (makeColor 0 0 0 0.2) $ Polygon [(0,-500),(400,-500),(400,500),(0,500)],insmapaPrevious,insmapaNext,insundo,insrestart]
-    insmapaPrevious = Color black $ Translate (((toEnum xMapa)/2)+32) (-40) $ Scale (0.14) (0.15) $ Text "'b' : prev level"
-    insmapaNext = Color black $ Translate (((toEnum xMapa)/2)+32) (-80) $ Scale (0.14) (0.15) $ Text "'n' : next level"
-    insundo = Color black $ Translate (((toEnum xMapa)/2)+32) (-120) $ Scale (0.15) (0.15) $ Text "'u' : undo"
-    insrestart = Color black $ Translate (((toEnum xMapa)/2)+32) (-160) $ Scale (0.15) (0.15) $ Text "'r' : restart"
+    insmapaPrevious = Color black $ 
+                      Translate (((toEnum xMapa)/2)+32) (-40) $
+                      Scale (0.15) (0.15) $
+                      Text "'b' : prev level"
+    insmapaNext = Color black $
+                  Translate (((toEnum xMapa)/2)+32) (-80) $
+                  Scale (0.15) (0.15) $
+                  Text "'n' : next level"
+    insundo = Color black $
+              Translate (((toEnum xMapa)/2)+32) (-120) $
+              Scale (0.15) (0.15) $
+              Text "'u' : undo"
+    insrestart = Color black $
+                 Translate (((toEnum xMapa)/2)+32) (-160) $
+                 Scale (0.15) (0.15) $
+                 Text "'r' : restart"
     -- desenha boneco
     figuraBoneco = Translate (toEnum x) (toEnum y) boneco
     -- desenha caixas, paredes e posiçoes finais
     paredesCPf = desenhaTab ms (-((fromIntegral xMapa)/2),(fromIntegral yMapa)/2) (parede,pf,caixa,caixaf)
     -- desenha score
-    score = Color red $ Translate (((toEnum xMapa)/2)+40) (0) $ Scale (0.25) (0.25) $ Text ("Moves: " ++ show n)
+    score = Color red $
+            Translate (((toEnum xMapa)/2)+40) (0) $
+            Scale (0.25) (0.25) $
+            Text ("Moves: " ++ show n)
     -- desenha estado do nivel
     sG = stateGame (xMapa,yMapa) fon
 
 -- | Desenha as caixas, paredes e posiçoes finais
 desenhaTab :: [String] -> (Float,Float) -> (Picture,Picture,Picture,Picture) -> Picture
 desenhaTab [] _ _ = (Pictures [])
-desenhaTab (h:t) (x,y) (parede,pf,caixa,caixaf) = Pictures [desenhaLinha h (x,y) (parede,pf,caixa,caixaf),desenhaTab t (x,y-tBCPf) (parede,pf,caixa,caixaf)]
+desenhaTab (h:t) (x,y) figuras = Pictures [desenhaLinha h (x,y) figuras, desenhaTab t (x,y-tBCPf) figuras]
 
 -- | Desenha uma linha de caixas, paredes e posiçoes finais
 desenhaLinha :: String -> (Float,Float) -> (Picture,Picture,Picture,Picture) -> Picture
 desenhaLinha [] _ _ = (Pictures [])
 desenhaLinha (c:cs) (x,y) (parede,pf,caixa,caixaf)
-        |(ord c)==35 = Pictures [Translate x y (parede), desenhaLinha cs (x+tBCPf,y) (parede,pf,caixa,caixaf)]
-        |(ord c)==46 = Pictures [Translate x y (pf), desenhaLinha cs (x+tBCPf,y) (parede,pf,caixa,caixaf)]
-        |(ord c)==72 = Pictures [Translate x y (caixa), desenhaLinha cs (x+tBCPf,y) (parede,pf,caixa,caixaf)]
-        |(ord c)==73 = Pictures [Translate x y (caixaf), desenhaLinha cs (x+tBCPf,y) (parede,pf,caixa,caixaf)]
-        |otherwise = desenhaLinha cs (x+tBCPf,y) (parede,pf,caixa,caixaf)
+        |(ord c)==35 = Pictures [Translate x y (parede), desenhaL]
+        |(ord c)==46 = Pictures [Translate x y (pf), desenhaL]
+        |(ord c)==72 = Pictures [Translate x y (caixa), desenhaL]
+        |(ord c)==73 = Pictures [Translate x y (caixaf), desenhaL]
+        |otherwise = desenhaL
+        where
+            desenhaL = desenhaLinha cs (x+tBCPf,y) (parede,pf,caixa,caixaf)
 
 -- | desenha o estado do jogo
 stateGame ::(Int,Int) -> Bool -> Picture
 stateGame (xMapa,yMapa) fon = if fon==True 
-                              then  Color (makeColorI 0 128 0 1) $ Pictures [Translate (((toEnum xMapa)/2)+30) (80) $ Scale (0.15) (0.15) $ Text "LEVEL COMPLETE.", Translate (((toEnum xMapa)/2)+30) (60) $ Scale (0.15) (0.15) $ Text "Try another one ('b','n')."]
-                              else  Translate (((toEnum xMapa)/2)+30) (80) $ Scale (0.15) (0.15) $ Color red $ Text "Level incomplete..."
+                              then  Color (makeColorI 0 128 0 1) $
+                                    Pictures [Translate (((toEnum xMapa)/2)+30) (80) $
+                                    Scale (0.15) (0.15) $
+                                    Text "LEVEL COMPLETE.", Translate (((toEnum xMapa)/2)+30) (60) $
+                                    Scale (0.15) (0.15) $
+                                    Text "Try another one ('b','n')."]
+                              else  Translate (((toEnum xMapa)/2)+30) (80) $
+                                    Scale (0.15) (0.15) $
+                                    Color red $
+                                    Text "Level incomplete..."
 
 -- | funçao que reage ao 'teclar' do jogador
 reageF :: [(String,Int)] -> Event -> Mapa -> Mapa
@@ -329,8 +345,7 @@ Nesta função usamos /isDigit/ pertencente ao Data.Char para verificarmos se o 
 contaListasMapa :: [String] -> Int
 contaListasMapa [] = 0
 contaListasMapa (x:xs)
-        |(null x)==True = contaListasMapa xs
-        |isDigit (head x)==True = contaListasMapa xs 
+        |(null x)==True || isDigit (head x)==True = contaListasMapa xs 
         |otherwise = 1 + contaListasMapa xs
 
 -- | Converte uma String numa lista de dois números.
@@ -373,16 +388,19 @@ removedalinha (h:t) cd tb = (aux h cd tb):(removedalinha t (drop 1 cd) tb)
                                 |ordCarD == 32 || ordCarR == 32 ||  ordCarDR == 32 || ordCarDL == 32 || ordCarL == 32 || ordCarU == 32 || ordCarUR == 32 || ordCarUL == 32 = '#'
                                 |ordCarD == 46 || ordCarR == 46 ||  ordCarDR == 46 || ordCarDL == 46 || ordCarL == 46 || ordCarU == 46 || ordCarUR == 46 || ordCarUL == 46 = '#'
                                 |otherwise = ' '
-                              where 
-                                ordCar = ord (devolveCaracterB (contalinhasB tb (snd(head(cd))) 0) (fst(head(cd))) 0)
-                                ordCarD = ord (devolveCaracterB (contalinhasB tb ((snd(head(cd)))-1) 0) (fst(head(cd))) 0)
-                                ordCarR = ord (devolveCaracterB (contalinhasB tb (snd(head(cd))) 0) ((fst(head(cd)))+1) 0)
-                                ordCarDR = ord (devolveCaracterB (contalinhasB tb ((snd(head(cd)))-1) 0) ((fst(head(cd)))+1) 0)
-                                ordCarDL = ord (devolveCaracterB (contalinhasB tb ((snd(head(cd)))-1) 0) ((fst(head(cd)))-1) 0)
-                                ordCarL = ord (devolveCaracterB (contalinhasB tb (snd(head(cd))) 0) ((fst(head(cd)))-1) 0)
-                                ordCarU = ord (devolveCaracterB (contalinhasB tb ((snd(head(cd)))+1) 0) (fst(head(cd))) 0)
-                                ordCarUR = ord (devolveCaracterB (contalinhasB tb ((snd(head(cd)))+1) 0) ((fst(head(cd)))+1) 0)
-                                ordCarUL = ord (devolveCaracterB (contalinhasB tb ((snd(head(cd)))+1) 0) ((fst(head(cd)))-1) 0)
+                              where
+                                cdH = head(cd)
+                                cdHF = fst(cdH)
+                                cdHS = snd(cdH)
+                                ordCar = ord (devolveCaracterB (contalinhasB tb cdHS 0) cdHF 0)
+                                ordCarD = ord (devolveCaracterB (contalinhasB tb (cdHS-1) 0) cdHF 0)
+                                ordCarR = ord (devolveCaracterB (contalinhasB tb cdHS 0) (cdHF+1) 0)
+                                ordCarDR = ord (devolveCaracterB (contalinhasB tb (cdHS-1) 0) (cdHF+1) 0)
+                                ordCarDL = ord (devolveCaracterB (contalinhasB tb (cdHS-1) 0) (cdHF-1) 0)
+                                ordCarL = ord (devolveCaracterB (contalinhasB tb cdHS 0) (cdHF-1) 0)
+                                ordCarU = ord (devolveCaracterB (contalinhasB tb (cdHS+1) 0) cdHF 0)
+                                ordCarUR = ord (devolveCaracterB (contalinhasB tb (cdHS+1) 0) (cdHF+1) 0)
+                                ordCarUL = ord (devolveCaracterB (contalinhasB tb (cdHS+1) 0) (cdHF-1) 0)
 
 -- | Função que devolve o caracter de uma certa lista.
 devolveCaracterB :: String -> Int -> Int -> Char
@@ -446,10 +464,9 @@ colocaCaixas l (h:t) = colocaCaixas (colocaCaixa l h) t
 -- | Função que remove as coordenadas incorretas (as coordenadas que só tem um número ou as coordenadas que têm caracteres inválidos).
 remInc :: [String] -> [String]
 remInc [] = []
-remInc (h:t) |h=="" = remInc t
-             |length (words h) /= 2 = remInc t
-             |aux h == False = remInc t
-             |otherwise = h:(remInc t)
+remInc (h:t) 
+        |h=="" || length (words h) /= 2 || aux h == False = remInc t
+        |otherwise = h:(remInc t)
         where aux :: String -> Bool
               aux [] = True
               aux (x:xs) = if (isDigit x) || x==' ' 
@@ -477,16 +494,21 @@ verificaMapa linhas = if erro<0
 
 -- | Devolve o nº da linha que dá erro.
 vErros :: [String] -> Int
-vErros linhas = juntaErros okTab (juntaErros oklength (juntaErros okCoords (juntaErros okCoordsT (juntaErros okCaixas (juntaErros okBoneco okCaixasR)))))
+vErros linhas = juntaErros 
+                    (juntaErros okTab (juntaErros oklength okCoords)) 
+                    (juntaErros (juntaErros okCoordsT okCaixas) (juntaErros okBoneco okCaixasR))
     where
     (tab,coords) = parteMapa linhas
-    okTab = validaTab 1 tab (contaListasMapa tab)
-    okCoords = validaCoords tab (remInc coords) 1
+    numL = contaListasMapa tab
+    coordsCorretas = remInc coords
+    coordsTuplos = tuploCoord coordsCorretas
+    okTab = validaTab 1 tab numL
+    okCoords = validaCoords tab coordsCorretas 1
     okCaixas = validaCaixas tab (remVazio coords)
     oklength = verificalength tab 1
-    okCoordsT = validaCoordsT coords 1 (contaListasMapa tab)
-    okBoneco = validaBoneco (daCoords 0 (reverse tab) 0) (tuploCoord (remInc coords)) (contaListasMapa tab)
-    okCaixasR = validaCaixasR (tuploCoord (remInc coords)) (drop 1 (tuploCoord (remInc coords))) (contaListasMapa tab) 2
+    okCoordsT = validaCoordsT coords 1 numL
+    okBoneco = validaBoneco (daCoords 0 (reverse tab) 0) coordsTuplos numL
+    okCaixasR = validaCaixasR coordsTuplos (drop 1 coordsTuplos) numL 2
 
 {- | Devolve o nº de linhas de coordenadas.
 
@@ -541,10 +563,10 @@ ord a == 46
 -}
 validaLinhaTab :: Int -> String -> Int -> Int
 validaLinhaTab pos [] m = -1
-validaLinhaTab pos (a:b) m |pos==1 && ord a == 35 = validaLinhaTab pos b m
-                           |pos==m && ord a == 35 = validaLinhaTab pos b m
-                           |pos>1 && pos<m && ord a == 35 && ord(last (a:b)) == 35 = aux pos b 
-                           |otherwise = pos
+validaLinhaTab pos (a:b) m 
+                    |(pos==1 || pos==m) && ord a == 35 = validaLinhaTab pos b m
+                    |pos>1 && pos<m && ord a == 35 && ord(last (a:b)) == 35 = aux pos b 
+                    |otherwise = pos
                   where aux :: Int -> String -> Int
                         aux pos [] = -1
                         aux pos (x:xs) |ord x == 35 || ord x == 32 || ord x == 46 = aux pos xs
@@ -553,11 +575,18 @@ validaLinhaTab pos (a:b) m |pos==1 && ord a == 35 = validaLinhaTab pos b m
 -- | Testa as coordenadas e devolve a linha em caso de haver erros.
 validaCoords :: [String] -> [String] -> Int -> Int
 validaCoords _ [] n = -1
-validaCoords (x:xs) (h:t) n = if (fst (liToT (sToI h))) == -1 
-                              then -1
-                              else if ord (devolveCaracter (contalinhas (x:xs) (snd (liToT (sToI h))) 0 (contaListasMapa (x:xs))) (fst (liToT (sToI h))) 0) == 32 || ord (devolveCaracter (contalinhas (x:xs) (snd (liToT (sToI h))) 0 (contaListasMapa (x:xs))) (fst (liToT (sToI h))) 0) == 46 
-                                   then validaCoords (x:xs) t (n+1)
-                                   else contaListasMapa (x:xs) + n  
+validaCoords mapa (h:t) n = if fsTuplo == -1 
+                            then -1
+                            else if ordC == 32 || ordC == 46 
+                                 then validaCoords mapa t (n+1)
+                                 else numLMapa + n
+                            where
+                                numLMapa = contaListasMapa mapa
+                                tuplo = liToT (sToI h)
+                                fsTuplo = fst tuplo
+                                numL = contalinhas mapa (snd tuplo) 0 numLMapa
+                                caracter = devolveCaracter numL fsTuplo 0
+                                ordC = ord caracter
 
 -- | Verifica se o boneco está dentro do mapa.
 validaBoneco :: [(Int,Int)] -> [(Int,Int)] -> Int -> Int
@@ -597,10 +626,14 @@ contalinhas (x:xs) p n m
 
 -- | Verifica a correspondencia entre nº de pontos no tabuleiro e coordenadas.
 validaCaixas :: [String] -> [String] -> Int
-validaCaixas (x:xs) (y:ys) 
-        |(contaListasBC (y:ys)-1) == numeroPontos (x:xs) = -1
-        |(contaListasBC (y:ys)-1) > numeroPontos (x:xs) = (contaListasMapa (x:xs)) + numeroPontos (x:xs) + 2
-        |(contaListasBC (y:ys)-1) < numeroPontos (x:xs) = (contaListasMapa (x:xs)) + contaListasBC (y:ys) + 1
+validaCaixas mapa coords
+        |(numLBC-1) == numP = -1
+        |(numLBC-1) > numP = numL + numP + 2
+        |(numLBC-1) < numP = numL + numLBC + 1
+        where
+            numLBC = contaListasBC coords
+            numP = numeroPontos mapa
+            numL = contaListasMapa mapa
 validaCaixas _ _ = 1
 
 -- | Devolve o número de pontos existentes no mapa
